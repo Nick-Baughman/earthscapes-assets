@@ -346,7 +346,13 @@ const STYLES = `
 .esn-trust li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--esn-accent);flex:none;}
 
 .esn-grid{display:grid;gap:1px;background:var(--esn-line);border:1px solid var(--esn-line);
-  border-radius:var(--esn-radius);overflow:hidden;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:8px;}
+  border-radius:var(--esn-radius);overflow:hidden;margin-top:8px;
+  /* Explicit counts, not auto-fit. There are exactly 6 cards, and auto-fit
+     resolved to 4 columns at desktop width, stranding two dead cells that
+     showed the grid's own background. Every count below divides 6 evenly. */
+  grid-template-columns:repeat(3,1fr);}
+@media(max-width:900px){.esn-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.esn-grid{grid-template-columns:1fr;}}
 .esn-cell{background:var(--esn-ground);padding:24px;}
 .esn-cell p{font-size:.92rem;color:var(--esn-ink-soft);}
 
