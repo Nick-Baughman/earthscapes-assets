@@ -449,6 +449,28 @@ class CommercialSnowPage extends HTMLElement {
 
         root.style.marginLeft = `${-hostLeft}px`;
         root.style.width = `${viewport}px`;
+
+        this._syncHeight(root);
+    }
+
+    /**
+     * Make the host as tall as the content.
+     *
+     * Wix gives a custom element a fixed height set by dragging in the Editor.
+     * The content's real height is not that number and changes with viewport
+     * width, so the element either leaves dead space above the footer or clips
+     * its own end. Neither is fixable by dragging, because there is no single
+     * correct value.
+     *
+     * The ResizeObserver on the host re-enters here when this changes the
+     * height. That settles rather than looping: the second pass measures the
+     * same content height and the tolerance check below stops it writing again.
+     */
+    _syncHeight(root) {
+        const contentHeight = Math.ceil(root.getBoundingClientRect().height);
+        if (contentHeight > 0 && Math.abs(this.offsetHeight - contentHeight) > 2) {
+            this.style.height = `${contentHeight}px`;
+        }
     }
 
     /** Re-fit on resize and whenever Wix resizes the host itself. */
