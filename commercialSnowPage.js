@@ -175,10 +175,13 @@ const TOKENS = `
  * properties outperform stock on this page by a wide margin, because the buyer
  * is specifically trying to work out whether this contractor is real.
  *
- * Served from the assets repo over jsDelivr so swapping one is a push, not a
- * Wix publish. `?v=` is cache-busting: bump it when a file is replaced.
+ * Served from GitHub Pages, NOT jsDelivr. jsDelivr caches a branch URL for up
+ * to 12 hours and its purge endpoint did not reliably clear the branch-to-commit
+ * resolution, so an updated file kept serving stale. Pages honours normal cache
+ * headers and goes live within a minute of a push, which is the whole point of
+ * hosting outside Wix. `?v=` is belt-and-braces: bump it when a file is replaced.
  */
-const CDN = 'https://cdn.jsdelivr.net/gh/Nick-Baughman/earthscapes-assets@main/img';
+const CDN = 'https://nick-baughman.github.io/earthscapes-assets/img';
 const IMAGES = {
     hero: {
         src: `${CDN}/hero-lot.jpg?v=1`,

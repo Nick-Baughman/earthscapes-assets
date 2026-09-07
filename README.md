@@ -21,18 +21,26 @@ turns that into a push.
 Set in the Wix Editor on the Custom Element, under **Choose Source → Server URL**:
 
 ```
-https://cdn.jsdelivr.net/gh/Nick-Baughman/earthscapes-assets@main/commercialSnowPage.js
+https://nick-baughman.github.io/earthscapes-assets/commercialSnowPage.js
 ```
 
 ## Deploying a change
 
 ```sh
 git add -A && git commit -m "..." && git push
-curl -s "https://purge.jsdelivr.net/gh/Nick-Baughman/earthscapes-assets@main/commercialSnowPage.js"
 ```
 
-The purge matters. jsDelivr caches a branch URL for up to 12 hours, so without
-it a change can take that long to appear. With it, the next page load is current.
+That is the whole deploy. GitHub Pages publishes within about a minute and no
+Wix publish is involved.
+
+### Why Pages and not jsDelivr
+
+This repo was briefly served over jsDelivr. Do not go back to it. jsDelivr
+caches a branch URL with `s-maxage=43200` (12 hours) and caches the
+branch-to-commit resolution separately — its purge endpoint returned
+`"status": "finished"` while the edge kept serving a stale file for minutes
+afterwards. Only a commit-SHA-pinned URL updated immediately, and that URL
+changes on every deploy, which defeats the purpose.
 
 ## Rules
 
