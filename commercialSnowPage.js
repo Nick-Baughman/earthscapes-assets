@@ -29,115 +29,6 @@
  */
 
 /* ------------------------------------------------------------------ *
- * Form constants and validation.
- *
- * Deliberately inlined rather than imported from public/commercialSnowLead.js.
- * A custom element is loaded by Wix as a standalone browser script, not
- * through Velo's module resolver, so a `public/...` import can fail at load
- * and take the whole page down with it. A silent blank page is a far worse
- * outcome than this duplication.
- *
- * The duplication is bounded and intentional: the server re-validates every
- * lead independently in backend/commercialLeads.web.js, because these are two
- * different trust domains. Client validation is a courtesy to the visitor;
- * the backend's is the gate. Neither is authoritative for the other.
- * ------------------------------------------------------------------ */
-
-const PROPERTY_TYPES = [
-    { value: 'retail', label: 'Retail or shopping center' },
-    { value: 'office', label: 'Office park or corporate campus' },
-    { value: 'industrial', label: 'Industrial or warehouse' },
-    { value: 'hoa', label: 'HOA or residential community' },
-    { value: 'medical', label: 'Medical or professional building' },
-    { value: 'municipal', label: 'Municipal or institutional' },
-    { value: 'other', label: 'Something else' },
-];
-
-const CONTRACTOR_STATUS = [
-    { value: 'have_contract', label: 'We have a contractor and are comparing' },
-    { value: 'no_contract', label: 'We do not have a contractor for this season' },
-    { value: 'self_perform', label: 'We handle it in-house today' },
-    { value: 'rfp', label: 'We are running an RFP or scope of work' },
-];
-
-const CONVERSION_EVENTS = {
-    ASSESSMENT_REQUESTED: 'assessment_requested',
-    SCOPE_SUBMITTED: 'scope_of_work_submitted',
-    PHONE_CLICKED: 'phone_click',
-};
-
-function isValidEmail(email) {
-    if (!email || typeof email !== 'string') return false;
-    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
-}
-
-function isValidPhone(phone) {
-    if (!phone || typeof phone !== 'string') return false;
-    const digits = phone.replace(/\D/g, '');
-    return digits.length === 10 || (digits.length === 11 && digits.startsWith('1'));
-}
-
-function isPortfolioLead(lead) {
-    if (!lead) return false;
-    if (lead.contractorStatus === 'rfp') return true;
-    return (Number(lead.buildingCount) || 0) > 1 || (Number(lead.siteCount) || 0) > 1;
-}
-
-function normalizeLead(raw = {}) {
-    const text = (v) => (typeof v === 'string' ? v.trim() : v ?? null);
-    const count = (v) => {
-        const n = Number(v);
-        return Number.isFinite(n) && n > 0 ? n : null;
-    };
-    const lead = {
-        companyName: text(raw.companyName),
-        contactName: text(raw.contactName),
-        email: text(raw.email) ? String(raw.email).trim().toLowerCase() : null,
-        phone: text(raw.phone),
-        propertyAddress: text(raw.propertyAddress),
-        propertyType: text(raw.propertyType),
-        squareFootage: count(raw.squareFootage),
-        parkingCount: count(raw.parkingCount),
-        buildingCount: count(raw.buildingCount),
-        siteCount: count(raw.siteCount),
-        contractorStatus: text(raw.contractorStatus),
-        notes: text(raw.notes),
-        submittedAt: new Date().toISOString(),
-    };
-    lead.isPortfolio = isPortfolioLead(lead);
-    return lead;
-}
-
-function validateLead(lead = {}) {
-    const errors = {};
-    if (!lead.companyName || !String(lead.companyName).trim()) {
-        errors.companyName = 'Company or property name is required.';
-    }
-    if (!isValidEmail(lead.email)) errors.email = 'Enter a valid email address.';
-    if (!isValidPhone(lead.phone)) errors.phone = 'Enter a phone number we can reach you on.';
-    if (!lead.propertyType || !PROPERTY_TYPES.some((t) => t.value === lead.propertyType)) {
-        errors.propertyType = 'Select a property type.';
-    }
-    if (!lead.propertyAddress || !String(lead.propertyAddress).trim()) {
-        errors.propertyAddress = 'Property address is required so we can confirm coverage.';
-    }
-    return { valid: Object.keys(errors).length === 0, errors };
-}
-
-function buildConversionPayload(lead) {
-    return {
-        event: lead.isPortfolio
-            ? CONVERSION_EVENTS.SCOPE_SUBMITTED
-            : CONVERSION_EVENTS.ASSESSMENT_REQUESTED,
-        property_type: lead.propertyType,
-        contractor_status: lead.contractorStatus,
-        is_portfolio: lead.isPortfolio,
-        building_count: lead.buildingCount,
-        site_count: lead.siteCount,
-    };
-}
-
-/* ------------------------------------------------------------------ *
  * Design tokens. Change branding here and nowhere else.
  * ------------------------------------------------------------------ */
 const TOKENS = `
@@ -182,6 +73,17 @@ const TOKENS = `
  * hosting outside Wix. `?v=` is belt-and-braces: bump it when a file is replaced.
  */
 const CDN = 'https://nick-baughman.github.io/earthscapes-assets/img';
+
+/**
+ * Every CTA points at the site's existing consultation page.
+ *
+ * Mike, 2026-09-07: that is the flow EarthScapes actually works, so the page
+ * hands off rather than running a second, competing intake. The trade is that
+ * the qualification fields (property type, square footage, parking count,
+ * building count, current contractor) no longer reach them before a site
+ * visit — that filtering now happens on the call instead.
+ */
+const CTA_URL = 'https://www.earthscapesnj.com/consultation';
 const IMAGES = {
     hero: {
         src: `${CDN}/hero-lot.jpg?v=1`,
@@ -205,21 +107,32 @@ const TRUST = [
     'Large parking lots to small sidewalks',
 ];
 
-const PROPERTIES = [
-    ['Retail and shopping centers', 'Storefront access and customer parking cleared before open of business, with entryways and walkways treated separately from drive lanes.'],
-    ['Office parks and campuses', 'Multi-building coordination with prioritized access routes, so main entrances and ADA spaces clear first.'],
-    ['Industrial and warehouse', 'Loading dock access, truck court clearing, and turning radius maintained for freight that cannot wait out a storm.'],
-    ['HOAs and communities', 'Roadways, common areas, and shared parking on a schedule your board can hand to residents.'],
-    ['Medical and professional', 'Priority-tier service for properties where patients and staff cannot be turned away.'],
-    ['Municipal and institutional', 'Contract snow services for facilities with fixed operating obligations.'],
-];
+/**
+ * Property-type icons.
+ *
+ * Inline SVG rather than an icon font or a sprite: this element ships as one
+ * file with no build step and no second request, and `currentColor` means each
+ * icon inherits the accent without a second copy per theme.
+ *
+ * All drawn on a 24x24 box with the same 1.6 stroke so they read as one set.
+ */
+const ICONS = {
+    retail: '<path d="M3 9.5 4.6 4h14.8L21 9.5M3 9.5h18M3 9.5v10.5h18V9.5M3 9.5a2.4 2.4 0 0 0 4.5 0 2.4 2.4 0 0 0 4.5 0 2.4 2.4 0 0 0 4.5 0 2.4 2.4 0 0 0 4.5 0M9.5 20V14h5v6"/>',
+    office: '<path d="M4 21V4.5A1.5 1.5 0 0 1 5.5 3h8A1.5 1.5 0 0 1 15 4.5V21M15 21V10h4.5A1.5 1.5 0 0 1 21 11.5V21M2.5 21h19M7 7h2M10.5 7h1M7 11h2M10.5 11h1M7 15h2M10.5 15h1M18 14h1M18 17.5h1"/>',
+    industrial: '<path d="M2.5 21V11l6 3.5V11l6 3.5V7l7 4v10M2.5 21h19M6 21v-3.5h3V21M13 21v-3.5h3V21"/>',
+    hoa: '<path d="M2.5 11 8 6.5 13.5 11M4 10v11h8V10M13.5 21h7V13l-3.5-3-3.5 3M16 21v-4h2.5v4M6.5 14h3v3h-3z"/>',
+    medical: '<path d="M4 21V5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5V21M2.5 21h19M12 7.5v6M9 10.5h6M8 21v-4h8v4"/>',
+    municipal: '<path d="M12 3 2.5 8.5h19L12 3ZM4.5 11v7M9 11v7M15 11v7M19.5 11v7M2.5 18h19M2 21h20"/>',
+};
 
-const PORTFOLIO = [
-    ['One standard across every site', 'Each property gets its own site plan with its own priority zones, stacking areas, and trigger terms. The service standard stays the same across the portfolio.'],
-    ['Reporting that rolls up', 'Every site produces the same time-stamped record in the same format. Review one property or the whole portfolio without reconciling three reporting styles.'],
-    ['Insurance handled once', 'Certificates naming each property as additional insured, issued per site, coordinated through one point of contact instead of one thread per building.'],
-    ['One point of contact', 'One person who knows your portfolio, not a dispatch queue that treats every call as a new customer.'],
-    ['Working from a scope of work?', 'Send it. We will price against your scope and tell you plainly where we can meet it, where we would propose something different, and why.'],
+/** [icon key, heading, body] */
+const PROPERTIES = [
+    ['retail', 'Retail and shopping centers', 'Storefront access and customer parking cleared before open of business, with entryways and walkways treated separately from drive lanes.'],
+    ['office', 'Office parks and campuses', 'Multi-building coordination with prioritized access routes, so main entrances and ADA spaces clear first.'],
+    ['industrial', 'Industrial and warehouse', 'Loading dock access, truck court clearing, and turning radius maintained for freight that cannot wait out a storm.'],
+    ['hoa', 'HOAs and communities', 'Roadways, common areas, and shared parking on a schedule your board can hand to residents.'],
+    ['medical', 'Medical and professional', 'Priority-tier service for properties where patients and staff cannot be turned away.'],
+    ['municipal', 'Municipal and institutional', 'Contract snow services for facilities with fixed operating obligations.'],
 ];
 
 const SERVICES = [
@@ -278,11 +191,6 @@ function esc(s) {
 const pairRows = (pairs, cls) => pairs
     .map(([h, p]) => `<div class="${cls}"><h3>${esc(h)}</h3><p>${esc(p)}</p></div>`)
     .join('');
-
-const options = (list, placeholder) => [
-    `<option value="">${esc(placeholder)}</option>`,
-    ...list.map((o) => `<option value="${esc(o.value)}">${esc(o.label)}</option>`),
-].join('');
 
 /* ------------------------------------------------------------------ *
  * Styles
@@ -360,6 +268,27 @@ const STYLES = `
 .esn-cell{background:var(--esn-ground);padding:24px;}
 .esn-cell p{font-size:.92rem;color:var(--esn-ink-soft);}
 
+/* Property cards: icon above heading, so the six read as a set at a glance
+   rather than as six paragraphs. */
+.esn-ico{display:block;width:26px;height:26px;color:var(--esn-accent);margin-bottom:12px;}
+.esn-ico svg{width:100%;height:100%;display:block;}
+
+/* Services and contracts: two columns instead of full-width rows. Full-width
+   rows left a wide ragged gutter on the right, because the copy is much
+   shorter than the measure. Two columns fill the space and the last row of an
+   odd count sits left-aligned rather than stranded. */
+.esn-svc{display:grid;grid-template-columns:repeat(2,1fr);gap:2px 40px;}
+.esn-svc-item{padding:20px 0;border-bottom:1px solid var(--esn-line);}
+.esn-svc-item p{font-size:.95rem;color:var(--esn-ink-soft);}
+@media(max-width:760px){.esn-svc{grid-template-columns:1fr;gap:0;}}
+
+/* Closing CTA gets the deep ground so the page ends on a clear call rather
+   than trailing off into another pale band. */
+.esn-close{background:var(--esn-ground-deep);}
+.esn-close h2{color:#fff;}
+.esn-close .esn-lead{color:#B6C6D0;}
+.esn-close .esn-btn-2{color:#fff;border-color:var(--esn-line-deep);}
+
 .esn-row{padding:22px 0;border-bottom:1px solid var(--esn-line);}
 .esn-row:last-child{border-bottom:none;}
 .esn-row p{font-size:.95rem;color:var(--esn-ink-soft);}
@@ -378,20 +307,6 @@ const STYLES = `
 .esn-faq details[open] summary::after{content:"\\2013";}
 .esn-faq .esn-a{padding:0 0 20px;font-size:.95rem;color:var(--esn-ink-soft);}
 
-.esn-form{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:28px;}
-.esn-field{display:flex;flex-direction:column;gap:6px;}
-.esn-field.esn-wide{grid-column:1/-1;}
-.esn-field label{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--esn-ink-mute);font-family:var(--esn-display);}
-.esn-field input,.esn-field select,.esn-field textarea{
-  font:inherit;font-size:.95rem;padding:11px 13px;border:1px solid var(--esn-line);
-  border-radius:var(--esn-radius);background:var(--esn-ground);color:var(--esn-ink);width:100%;}
-.esn-field textarea{min-height:92px;resize:vertical;}
-.esn-field input:focus-visible,.esn-field select:focus-visible,.esn-field textarea:focus-visible{
-  outline:2px solid var(--esn-accent);outline-offset:1px;}
-.esn-field.esn-bad input,.esn-field.esn-bad select{border-color:#B4332A;}
-.esn-err{color:#B4332A;font-size:.85rem;margin-top:14px;min-height:1.2em;}
-.esn-ok{background:var(--esn-ground-alt);border-left:3px solid var(--esn-accent);padding:22px;border-radius:0 var(--esn-radius) var(--esn-radius) 0;}
-.esn-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
 
 @media(max-width:640px){
   .esn-sec{padding:52px 20px;}
@@ -417,8 +332,8 @@ function template() {
       <h1 class="esn-h1">Commercial Snow &amp; Ice Management for New Jersey Properties</h1>
       <p class="esn-lead">When the storm hits, your lot needs to be open and your liability needs to be documented. We handle both.</p>
       <div class="esn-cta">
-        <a class="esn-btn esn-btn-1" href="#esn-assessment">Request a Site Assessment</a>
-        <a class="esn-btn esn-btn-2" href="#esn-portfolio">Send Us Your Scope of Work</a>
+        <a class="esn-btn esn-btn-1" href="${CTA_URL}">Request a Site Assessment</a>
+        <a class="esn-btn esn-btn-2" href="${CTA_URL}">Send Us Your Scope of Work</a>
       </div>
     </div>
   </section>
@@ -426,10 +341,15 @@ function template() {
   <ul class="esn-trust">${TRUST.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
 
   <section class="esn-sec"><div class="esn-in">
-    <h2 class="esn-h2">A missed push is more than an inconvenience</h2>
-    <p class="esn-lead">By the time your tenants arrive, the decision has already been made for you. Either the lot was cleared overnight or it was not.</p>
-    <p class="esn-p">For commercial properties, the cost of a bad snow contractor is not measured in snow. It is measured in the tenant who could not open, the customer who went elsewhere, and the claim filed six months later by someone who slipped in a lot with no record of when it was last treated.</p>
-    <p class="esn-p">We built our commercial program around the three things property managers actually need. Crews that move on the forecast instead of on your phone call. Ice management that prevents the refreeze nobody plans for. A paper trail that holds up when someone files.</p>
+    <h2 class="esn-h2">Properties we service</h2>
+    <div class="esn-grid">${PROPERTIES.map(([icon, h, p]) => `<div class="esn-cell">
+      <span class="esn-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[icon]}</svg></span>
+      <h3 class="esn-h3">${esc(h)}</h3><p>${esc(p)}</p></div>`).join('')}</div>
+  </div></section>
+
+  <section class="esn-sec esn-alt"><div class="esn-in">
+    <h2 class="esn-h2">What is included</h2>
+    <div class="esn-svc">${SERVICES.map(([h, p]) => `<div class="esn-svc-item"><h3 class="esn-h3">${esc(h)}</h3><p>${esc(p)}</p></div>`).join('')}</div>
   </div></section>
 
   <section class="esn-sec esn-deep">
@@ -438,80 +358,40 @@ function template() {
     <div class="esn-in">
     <h2 class="esn-h2">The documentation matters as much as the plowing</h2>
     <p class="esn-lead" style="color:#C9D7DF">Slip-and-fall claims are usually filed long after the storm, and they turn on one question. Can you show what was done, and when?</p>
-    <p class="esn-p">Most snow contracts leave you answering that with a memory and an invoice. Ours do not. Site inspections produce detailed reports and time-stamped photos, and every invoice carries the storm total. The record is built as the season runs, not reconstructed after a letter arrives.</p>
+    <p class="esn-p">Site inspections produce detailed reports and time-stamped photos, and every invoice carries the storm total. The record is built as the season runs, not reconstructed after a letter arrives.</p>
     <p class="esn-p">EarthScapes is fully licensed and insured. Certificates naming your property as additional insured are provided at contract signing.</p>
-  </div></section>
-
-  <section class="esn-sec"><div class="esn-in">
-    <h2 class="esn-h2">Properties we service</h2>
-    <div class="esn-grid">${PROPERTIES.map(([h, p]) => `<div class="esn-cell"><h3 class="esn-h3">${esc(h)}</h3><p>${esc(p)}</p></div>`).join('')}</div>
-  </div></section>
-
-  <section class="esn-sec esn-alt" id="esn-portfolio"><div class="esn-in">
-    <h2 class="esn-h2">Managing more than one property?</h2>
-    <p class="esn-lead">Portfolio work is a different problem from single-site work. The plowing is the easy part. The hard part is knowing that site nine got the same service as site one, and being able to prove it without calling three people.</p>
-    <div style="margin-top:26px">${pairRows(PORTFOLIO.map(([h, p]) => [h, p]), 'esn-row')}</div>
-    <div class="esn-cta"><a class="esn-btn esn-btn-1" href="#esn-assessment">Send Us Your Scope of Work</a></div>
-  </div></section>
-
-  <section class="esn-sec"><div class="esn-in">
-    <h2 class="esn-h2">What is included</h2>
-    <div>${pairRows(SERVICES, 'esn-row')}</div>
   </div></section>
 
   <div class="esn-band" style="background-image:url('${IMAGES.entrance.src}')" role="img" aria-label="${esc(IMAGES.entrance.alt)}"></div>
 
-  <section class="esn-sec esn-alt"><div class="esn-in">
+  <section class="esn-sec"><div class="esn-in">
     <h2 class="esn-h2">How the season runs</h2>
     <ol class="esn-steps">${SEASON.map(([h, p], i) => `<li class="esn-step"><span class="esn-num">0${i + 1}</span><div><h3 class="esn-h3">${esc(h)}</h3><p>${esc(p)}</p></div></li>`).join('')}</ol>
   </div></section>
 
-  <section class="esn-sec"><div class="esn-in">
+  <section class="esn-sec esn-alt"><div class="esn-in">
     <h2 class="esn-h2">Contract structures</h2>
-    <div>${pairRows(CONTRACTS, 'esn-row')}</div>
-    <p class="esn-p" style="margin-top:22px">We will tell you which one fits your property and your budget cycle rather than pushing whichever is better for us. For most multi-tenant commercial sites, seasonal wins on the budgeting alone.</p>
+    <div class="esn-svc">${CONTRACTS.map(([h, p]) => `<div class="esn-svc-item"><h3 class="esn-h3">${esc(h)}</h3><p>${esc(p)}</p></div>`).join('')}</div>
+    <p class="esn-p" style="margin-top:26px">We will tell you which one fits your property and your budget cycle rather than pushing whichever is better for us. For most multi-tenant commercial sites, seasonal wins on the budgeting alone.</p>
   </div></section>
 
-  <section class="esn-sec esn-alt"><div class="esn-in">
+  <section class="esn-sec"><div class="esn-in">
     <h2 class="esn-h2">Where we work</h2>
-    <p class="esn-lead">EarthScapes provides commercial snow and ice management across New Jersey. Commercial snow coverage is tighter than our landscaping radius, because response time is the constraint that matters in a storm.</p>
+    <p class="esn-lead">EarthScapes provides commercial snow and ice management across Monmouth and Ocean counties, New Jersey.</p>
     <p class="esn-p">Not sure whether your property is in range? Ask. If we cannot service your property well, we will say so.</p>
   </div></section>
 
-  <section class="esn-sec"><div class="esn-in">
+  <section class="esn-sec esn-alt"><div class="esn-in">
     <h2 class="esn-h2">Common questions</h2>
     <div class="esn-faq">${FAQS.map(([q, a]) => `<details><summary>${esc(q)}</summary><p class="esn-a">${esc(a)}</p></details>`).join('')}</div>
   </div></section>
 
-  <section class="esn-sec esn-alt" id="esn-assessment"><div class="esn-in">
+  <section class="esn-sec esn-close"><div class="esn-in">
     <h2 class="esn-h2">Get your property assessed before the season fills</h2>
     <p class="esn-lead">We take a limited number of commercial contracts so that every property gets serviced properly in a real storm. Site assessments are free, and the plan you get is yours whether or not you sign with us.</p>
-
-    <form class="esn-form" id="esn-form" novalidate>
-      <div class="esn-hp" aria-hidden="true"><label>Do not fill<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-
-      <div class="esn-field" data-f="companyName"><label for="esn-company">Company or property name</label><input id="esn-company" name="companyName" type="text" autocomplete="organization" required></div>
-      <div class="esn-field" data-f="contactName"><label for="esn-contact">Your name</label><input id="esn-contact" name="contactName" type="text" autocomplete="name"></div>
-      <div class="esn-field" data-f="email"><label for="esn-email">Email</label><input id="esn-email" name="email" type="email" autocomplete="email" required></div>
-      <div class="esn-field" data-f="phone"><label for="esn-phone">Phone</label><input id="esn-phone" name="phone" type="tel" autocomplete="tel" required></div>
-      <div class="esn-field esn-wide" data-f="propertyAddress"><label for="esn-address">Property address</label><input id="esn-address" name="propertyAddress" type="text" autocomplete="street-address" required></div>
-      <div class="esn-field" data-f="propertyType"><label for="esn-type">Property type</label><select id="esn-type" name="propertyType" required>${options(PROPERTY_TYPES, 'Select one')}</select></div>
-      <div class="esn-field" data-f="contractorStatus"><label for="esn-status">Current snow contractor</label><select id="esn-status" name="contractorStatus">${options(CONTRACTOR_STATUS, 'Select one')}</select></div>
-      <div class="esn-field"><label for="esn-sqft">Approx. square footage</label><input id="esn-sqft" name="squareFootage" type="number" min="0" inputmode="numeric"></div>
-      <div class="esn-field"><label for="esn-parking">Parking spaces</label><input id="esn-parking" name="parkingCount" type="number" min="0" inputmode="numeric"></div>
-      <div class="esn-field"><label for="esn-buildings">Number of buildings</label><input id="esn-buildings" name="buildingCount" type="number" min="0" inputmode="numeric"></div>
-      <div class="esn-field"><label for="esn-sites">Number of sites</label><input id="esn-sites" name="siteCount" type="number" min="0" inputmode="numeric"></div>
-      <div class="esn-field esn-wide"><label for="esn-notes">Anything we should know, or paste your scope of work</label><textarea id="esn-notes" name="notes"></textarea></div>
-
-      <div class="esn-wide">
-        <button class="esn-btn esn-btn-1" type="submit" id="esn-submit">Request a Site Assessment</button>
-        <p class="esn-err" id="esn-error" role="alert" aria-live="polite"></p>
-      </div>
-    </form>
-
-    <div class="esn-ok esn-wide" id="esn-success" hidden>
-      <h3 class="esn-h3">Request received</h3>
-      <p>We will be in touch to schedule the walk-through. If a storm is already in the forecast, call us rather than waiting on email.</p>
+    <div class="esn-cta">
+      <a class="esn-btn esn-btn-1" href="${CTA_URL}">Request a Site Assessment</a>
+      <a class="esn-btn esn-btn-2" href="tel:7324448575">Call 732-444-8575</a>
     </div>
   </div></section>
 
@@ -526,7 +406,6 @@ class CommercialSnowPage extends HTMLElement {
         if (this._mounted) return;   // Wix may re-attach on resize; render once.
         this._mounted = true;
         this.innerHTML = template();
-        this._wireForm();
         this._fitToViewport();
         this._watchViewport();
     }
@@ -589,82 +468,6 @@ class CommercialSnowPage extends HTMLElement {
         }
     }
 
-    _wireForm() {
-        const form = this.querySelector('#esn-form');
-        const errorEl = this.querySelector('#esn-error');
-        const successEl = this.querySelector('#esn-success');
-        const submitBtn = this.querySelector('#esn-submit');
-        if (!form) return;
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            // Honeypot: a bot fills every field it finds.
-            if (form.elements.website && form.elements.website.value) return;
-
-            const raw = Object.fromEntries(new FormData(form).entries());
-            const lead = normalizeLead(raw);
-            const { valid, errors } = validateLead(lead);
-
-            this.querySelectorAll('.esn-field').forEach((f) => f.classList.remove('esn-bad'));
-
-            if (!valid) {
-                const [firstField] = Object.keys(errors);
-                const el = this.querySelector(`.esn-field[data-f="${firstField}"]`);
-                if (el) {
-                    el.classList.add('esn-bad');
-                    const input = el.querySelector('input,select,textarea');
-                    if (input) input.focus();
-                }
-                errorEl.textContent = errors[firstField];
-                return;
-            }
-
-            errorEl.textContent = '';
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending...';
-
-            try {
-                await this._submit(lead);
-                form.hidden = true;
-                successEl.hidden = false;
-                successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } catch (err) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Request a Site Assessment';
-                errorEl.textContent = 'Something went wrong sending that. Please call us instead so this does not sit unanswered.';
-                // eslint-disable-next-line no-console
-                console.error('[commercial-snow-page] lead submit failed', err);
-            }
-        });
-    }
-
-    /**
-     * Hand the lead to the page for delivery, and fire the conversion event.
-     *
-     * The element does not talk to a backend itself: a custom element cannot
-     * import Velo backend modules. Page code listens for `esn-lead` and calls
-     * the backend web method, which is where server-side delivery belongs.
-     */
-    async _submit(lead) {
-        const payload = buildConversionPayload(lead);
-
-        if (typeof window !== 'undefined' && typeof window.dataLayer !== 'undefined') {
-            window.dataLayer.push(payload);
-        }
-
-        const detail = { lead, conversion: payload };
-        let settled;
-        const delivered = new Promise((resolve, reject) => { settled = { resolve, reject }; });
-        detail.resolve = settled.resolve;
-        detail.reject = settled.reject;
-
-        this.dispatchEvent(new CustomEvent('esn-lead', { detail, bubbles: true, composed: true }));
-
-        // If no page-code listener claimed it, don't hang the visitor.
-        const timeout = new Promise((resolve) => setTimeout(() => resolve('unclaimed'), 6000));
-        return Promise.race([delivered, timeout]);
-    }
 }
 
 if (!customElements.get('commercial-snow-page')) {
