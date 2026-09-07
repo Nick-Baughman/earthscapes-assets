@@ -288,6 +288,7 @@ const STYLES = `
 .esn-root{${TOKENS}
   font-family:var(--esn-body);color:var(--esn-ink);background:var(--esn-ground);
   line-height:1.6;font-size:17px;-webkit-font-smoothing:antialiased;}
+.esn-root{box-sizing:border-box;}
 .esn-root *,.esn-root *::before,.esn-root *::after{box-sizing:border-box;}
 .esn-root h1,.esn-root h2,.esn-root h3{font-family:var(--esn-display);line-height:1.12;margin:0;text-wrap:balance;font-weight:700;}
 .esn-root p{margin:0;max-width:var(--esn-measure);}
@@ -322,13 +323,13 @@ const STYLES = `
 /* Full-bleed photograph band. Height is capped in vh so it never eats the
    screen on a phone, and the aspect ratio floor stops it collapsing to a
    letterbox slit on very wide viewports. */
-.esn-band{position:relative;height:clamp(220px,38vh,420px);background-size:cover;background-position:center 60%;}
+.esn-band{position:relative;height:clamp(220px,38vh,420px);background-size:cover;background-position:center 38%;}
 
 /* The deep section keeps its dark ground and takes the photograph underneath
    at low opacity, so the type contrast is unchanged from the no-image build. */
 .esn-deep{position:relative;overflow:hidden;}
-.esn-deep-bg{position:absolute;inset:0;background-size:cover;background-position:center 55%;opacity:.28;}
-.esn-deep-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,26,32,.96) 0%,rgba(15,26,32,.86) 55%,rgba(15,26,32,.68) 100%);}
+.esn-deep-bg{position:absolute;inset:0;background-size:cover;background-position:center 45%;opacity:.42;}
+.esn-deep-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,26,32,.95) 0%,rgba(15,26,32,.88) 46%,rgba(15,26,32,.55) 100%);}
 .esn-deep .esn-in{position:relative;}
 .esn-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px;}
 .esn-btn{font-family:var(--esn-display);font-weight:600;font-size:1rem;padding:14px 26px;
@@ -340,7 +341,7 @@ const STYLES = `
 
 .esn-trust{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;
   border-top:1px solid var(--esn-line);border-bottom:1px solid var(--esn-line);background:var(--esn-ground-alt);}
-.esn-trust li{flex:1 1 200px;padding:16px 20px;font-size:.87rem;font-weight:600;color:var(--esn-ink-soft);
+.esn-trust li{flex:1 1 210px;min-width:0;padding:16px 20px;font-size:.87rem;font-weight:600;color:var(--esn-ink-soft);
   border-right:1px solid var(--esn-line);display:flex;align-items:center;gap:9px;font-family:var(--esn-display);}
 .esn-trust li:last-child{border-right:none;}
 .esn-trust li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--esn-accent);flex:none;}
@@ -523,6 +524,66 @@ class CommercialSnowPage extends HTMLElement {
         this._mounted = true;
         this.innerHTML = template();
         this._wireForm();
+        this._fitToViewport();
+        this._watchViewport();
+    }
+
+    disconnectedCallback() {
+        if (this._onResize) window.removeEventListener('resize', this._onResize);
+        if (this._ro) this._ro.disconnect();
+    }
+
+    /**
+     * Break the content out to the real viewport width.
+     *
+     * Wix places a custom element inside a fixed-width container, so on a wide
+     * monitor the page sits in a column with dead margins and on a narrow one
+     * it gets clipped. Stretching the element in the Editor only ever picks one
+     * width; it cannot track the viewport.
+     *
+     * So measure where the host actually sits and pull the content back to
+     * x=0, then set the width to the viewport. This works regardless of how the
+     * container is sized or aligned, which matters because we do not control
+     * Wix's layout.
+     *
+     * `clientWidth` rather than `100vw` deliberately: `100vw` includes the
+     * scrollbar and would cause a horizontal scroll on every desktop browser
+     * that reserves gutter space.
+     */
+    _fitToViewport() {
+        const root = this.querySelector('.esn-root');
+        if (!root) return;
+
+        // Reset before measuring, otherwise each resize compounds the offset
+        // of the last one and the page walks off screen.
+        root.style.marginLeft = '0px';
+        root.style.width = 'auto';
+
+        const hostLeft = this.getBoundingClientRect().left;
+        const viewport = document.documentElement.clientWidth;
+
+        // Sub-pixel differences are not worth a reflow.
+        if (Math.abs(hostLeft) < 1 && Math.abs(this.getBoundingClientRect().width - viewport) < 1) return;
+
+        root.style.marginLeft = `${-hostLeft}px`;
+        root.style.width = `${viewport}px`;
+    }
+
+    /** Re-fit on resize and whenever Wix resizes the host itself. */
+    _watchViewport() {
+        let frame = null;
+        this._onResize = () => {
+            if (frame) cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => this._fitToViewport());
+        };
+        window.addEventListener('resize', this._onResize);
+
+        // Wix reflows its containers after our first paint (fonts, lazy
+        // sections), so a one-time fit on connect is not enough.
+        if (typeof ResizeObserver !== 'undefined') {
+            this._ro = new ResizeObserver(this._onResize);
+            this._ro.observe(this);
+        }
     }
 
     _wireForm() {
