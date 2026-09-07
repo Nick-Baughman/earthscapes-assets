@@ -42,3 +42,20 @@ it a change can take that long to appear. With it, the next page load is current
 - Source of truth for the element is the EarthScapes site repo at
   `src/public/custom-elements/`. Changes flow from there to here, not the
   reverse.
+
+## Images
+
+`img/` holds the page photography. **The current set is placeholder stock, not
+EarthScapes' own work.** They are deliberately generic — no branded vehicles, no
+crew, no signage — so the page never implies a job the company did not do. Alt
+text describes the scene and does not claim authorship.
+
+Replace with Nick's real property photos when available, keeping the same
+filenames, and bump the `?v=` query in `commercialSnowPage.js` so browsers and
+the CDN pick up the change.
+
+| File | Placement |
+|---|---|
+| `img/hero-lot.jpg` | Hero background |
+| `img/plow.jpg` | Documentation / liability section background |
+| `img/entrance.jpg` | Full-width band below the services list |

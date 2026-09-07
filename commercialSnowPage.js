@@ -163,6 +163,37 @@ const TOKENS = `
  * a copy change never means touching layout code.
  * ------------------------------------------------------------------ */
 
+/**
+ * Imagery.
+ *
+ * ⚠️ THESE ARE PLACEHOLDERS. Generated stock, not EarthScapes' own work.
+ * They are deliberately generic: no branded trucks, no crew, no signage, so
+ * nothing on the page implies a job EarthScapes actually did. Alt text
+ * describes the scene and never claims authorship.
+ *
+ * Replace with Nick's real photos when they arrive. Real photos of real
+ * properties outperform stock on this page by a wide margin, because the buyer
+ * is specifically trying to work out whether this contractor is real.
+ *
+ * Served from the assets repo over jsDelivr so swapping one is a push, not a
+ * Wix publish. `?v=` is cache-busting: bump it when a file is replaced.
+ */
+const CDN = 'https://cdn.jsdelivr.net/gh/Nick-Baughman/earthscapes-assets@main/img';
+const IMAGES = {
+    hero: {
+        src: `${CDN}/hero-lot.jpg?v=1`,
+        alt: 'A commercial parking lot cleared to bare pavement at winter dawn, with snow banked along the perimeter',
+    },
+    plow: {
+        src: `${CDN}/plow.jpg?v=1`,
+        alt: 'A snow plow clearing a commercial parking lot before dawn during a storm',
+    },
+    entrance: {
+        src: `${CDN}/entrance.jpg?v=1`,
+        alt: 'A commercial building entrance walkway cleared to the concrete and treated with de-icing salt',
+    },
+};
+
 const TRUST = [
     'Fully licensed and insured',
     '24/7 storm monitoring',
@@ -274,8 +305,31 @@ const STYLES = `
 .esn-lead{font-size:1.2rem;color:var(--esn-ink-soft);margin-top:18px;}
 .esn-p{color:var(--esn-ink-soft);margin-top:14px;}
 
-.esn-hero{padding:88px 24px 64px;border-bottom:1px solid var(--esn-line);}
-.esn-hero .esn-lead{max-width:36ch;font-size:1.3rem;}
+/* Hero sits on a photograph, so it carries its own light-on-dark palette
+   rather than inheriting the page's dark-on-light one. */
+.esn-hero{position:relative;padding:120px 24px 104px;overflow:hidden;background:var(--esn-ground-deep);}
+.esn-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center 62%;}
+/* Scrim, not a flat tint: the text side needs contrast, the right side can
+   keep the photograph legible. Without this the white type sits on snow. */
+.esn-hero-scrim{position:absolute;inset:0;
+  background:linear-gradient(100deg,rgba(9,16,20,.92) 0%,rgba(9,16,20,.82) 38%,rgba(9,16,20,.45) 72%,rgba(9,16,20,.3) 100%);}
+.esn-hero .esn-in{position:relative;}
+.esn-hero h1{color:#fff;}
+.esn-hero .esn-lead{max-width:36ch;font-size:1.3rem;color:#D3E0E7;}
+.esn-hero .esn-btn-2{color:#fff;border-color:rgba(255,255,255,.42);}
+.esn-hero .esn-btn-2:hover{background:rgba(255,255,255,.08);}
+
+/* Full-bleed photograph band. Height is capped in vh so it never eats the
+   screen on a phone, and the aspect ratio floor stops it collapsing to a
+   letterbox slit on very wide viewports. */
+.esn-band{position:relative;height:clamp(220px,38vh,420px);background-size:cover;background-position:center 60%;}
+
+/* The deep section keeps its dark ground and takes the photograph underneath
+   at low opacity, so the type contrast is unchanged from the no-image build. */
+.esn-deep{position:relative;overflow:hidden;}
+.esn-deep-bg{position:absolute;inset:0;background-size:cover;background-position:center 55%;opacity:.28;}
+.esn-deep-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,26,32,.96) 0%,rgba(15,26,32,.86) 55%,rgba(15,26,32,.68) 100%);}
+.esn-deep .esn-in{position:relative;}
 .esn-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px;}
 .esn-btn{font-family:var(--esn-display);font-weight:600;font-size:1rem;padding:14px 26px;
   border-radius:var(--esn-radius);border:1px solid transparent;cursor:pointer;text-decoration:none;display:inline-block;}
@@ -347,6 +401,8 @@ function template() {
 <div class="esn-root">
 
   <section class="esn-hero">
+    <div class="esn-hero-bg" style="background-image:url('${IMAGES.hero.src}')" role="img" aria-label="${esc(IMAGES.hero.alt)}"></div>
+    <div class="esn-hero-scrim"></div>
     <div class="esn-in">
       <h1 class="esn-h1">Commercial Snow &amp; Ice Management for New Jersey Properties</h1>
       <p class="esn-lead">When the storm hits, your lot needs to be open and your liability needs to be documented. We handle both.</p>
@@ -366,7 +422,10 @@ function template() {
     <p class="esn-p">We built our commercial program around the three things property managers actually need. Crews that move on the forecast instead of on your phone call. Ice management that prevents the refreeze nobody plans for. A paper trail that holds up when someone files.</p>
   </div></section>
 
-  <section class="esn-sec esn-deep"><div class="esn-in">
+  <section class="esn-sec esn-deep">
+    <div class="esn-deep-bg" style="background-image:url('${IMAGES.plow.src}')" role="img" aria-label="${esc(IMAGES.plow.alt)}"></div>
+    <div class="esn-deep-scrim"></div>
+    <div class="esn-in">
     <h2 class="esn-h2">The documentation matters as much as the plowing</h2>
     <p class="esn-lead" style="color:#C9D7DF">Slip-and-fall claims are usually filed long after the storm, and they turn on one question. Can you show what was done, and when?</p>
     <p class="esn-p">Most snow contracts leave you answering that with a memory and an invoice. Ours do not. Site inspections produce detailed reports and time-stamped photos, and every invoice carries the storm total. The record is built as the season runs, not reconstructed after a letter arrives.</p>
@@ -389,6 +448,8 @@ function template() {
     <h2 class="esn-h2">What is included</h2>
     <div>${pairRows(SERVICES, 'esn-row')}</div>
   </div></section>
+
+  <div class="esn-band" style="background-image:url('${IMAGES.entrance.src}')" role="img" aria-label="${esc(IMAGES.entrance.alt)}"></div>
 
   <section class="esn-sec esn-alt"><div class="esn-in">
     <h2 class="esn-h2">How the season runs</h2>
