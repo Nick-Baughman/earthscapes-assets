@@ -444,11 +444,14 @@ class CommercialSnowPage extends HTMLElement {
         const hostLeft = this.getBoundingClientRect().left;
         const viewport = document.documentElement.clientWidth;
 
-        // Sub-pixel differences are not worth a reflow.
-        if (Math.abs(hostLeft) < 1 && Math.abs(this.getBoundingClientRect().width - viewport) < 1) return;
-
-        root.style.marginLeft = `${-hostLeft}px`;
-        root.style.width = `${viewport}px`;
+        // Only rewrite the horizontal fit when it actually moved. Height is
+        // synced unconditionally below: an early return here previously
+        // skipped it whenever the host already spanned the viewport, which is
+        // the common case, so the height never got corrected at all.
+        if (Math.abs(hostLeft) > 1 || Math.abs(this.getBoundingClientRect().width - viewport) > 1) {
+            root.style.marginLeft = `${-hostLeft}px`;
+            root.style.width = `${viewport}px`;
+        }
 
         this._syncHeight(root);
     }
@@ -468,8 +471,30 @@ class CommercialSnowPage extends HTMLElement {
      */
     _syncHeight(root) {
         const contentHeight = Math.ceil(root.getBoundingClientRect().height);
-        if (contentHeight > 0 && Math.abs(this.offsetHeight - contentHeight) > 2) {
-            this.style.height = `${contentHeight}px`;
+        if (!contentHeight) return;
+
+        const set = (el) => {
+            if (!el) return;
+            if (Math.abs(el.getBoundingClientRect().height - contentHeight) > 2) {
+                // `important` because Wix sizes these from a generated
+                // stylesheet keyed on the component id, which beats a plain
+                // inline height.
+                el.style.setProperty('height', `${contentHeight}px`, 'important');
+            }
+        };
+
+        set(this);
+
+        // Wix wraps the element in its own sized component div and then a
+        // section. Both carry the height dragged in the Editor, so sizing only
+        // the element leaves the same dead space one level up. Walk up while
+        // the ancestor is still taller than the content, and stop at the
+        // section so we never touch page-level layout.
+        let node = this.parentElement;
+        for (let depth = 0; node && depth < 4; depth += 1) {
+            if (node.getBoundingClientRect().height > contentHeight + 2) set(node);
+            if (node.tagName === 'SECTION') break;
+            node = node.parentElement;
         }
     }
 
