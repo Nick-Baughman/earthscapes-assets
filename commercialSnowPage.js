@@ -480,6 +480,12 @@ class CommercialSnowPage extends HTMLElement {
                 // stylesheet keyed on the component id, which beats a plain
                 // inline height.
                 el.style.setProperty('height', `${contentHeight}px`, 'important');
+                // min-height has to go too. Wix holds the dragged height there
+                // as well, and a min-height floor silently wins over a smaller
+                // height — the element kept measuring 7798px with an inline
+                // `height: 5324px !important` already applied until this was
+                // cleared.
+                el.style.setProperty('min-height', '0', 'important');
             }
         };
 
