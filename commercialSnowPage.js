@@ -331,9 +331,11 @@ function template() {
     <div class="esn-in">
       <h1 class="esn-h1">Commercial Snow &amp; Ice Management for New Jersey Properties</h1>
       <p class="esn-lead">When the storm hits, your lot needs to be open and your liability needs to be documented. We handle both.</p>
+      <!-- One CTA only. Both hero buttons went to the same URL, so the second
+           was a choice that wasn't a choice: it split attention and asked the
+           visitor to categorise themselves before they had read anything. -->
       <div class="esn-cta">
         <a class="esn-btn esn-btn-1" href="${CTA_URL}">Request a Site Assessment</a>
-        <a class="esn-btn esn-btn-2" href="${CTA_URL}">Send Us Your Scope of Work</a>
       </div>
     </div>
   </section>
