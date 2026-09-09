@@ -149,7 +149,7 @@ const SEASON = [
     ['Site assessment', 'We walk your property before the season and map it. Priority zones, stacking areas, drainage, obstacles, ADA routes, and anything that needs flagging before it is buried under snow.'],
     ['Your site plan', 'You get a site-specific plan documenting trigger terms, service sequence, materials, and contacts. Everyone knows what happens before the first flake falls.'],
     ['Storm monitoring and dispatch', 'We track incoming systems through the season. Crews move on your contract terms, not on your phone call.'],
-    ['Service and documentation', 'Every visit is logged. Detailed reports and time-stamped photos from site inspections, and the storm total on your invoice. You get the record whether or not you ever need it.'],
+    ['Service and documentation', 'Site inspections produce detailed reports and time-stamped photos, and every invoice carries the storm total. You get the record whether or not you ever need it.'],
     ['Season close-out', 'Post-season walkthrough for any turf, curb, or hardscape damage, plus planning for next year.'],
 ];
 
