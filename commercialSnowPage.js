@@ -57,20 +57,29 @@ const TOKENS = `
 /**
  * Imagery.
  *
- * ⚠️ THESE ARE PLACEHOLDERS. Generated stock, not EarthScapes' own work.
- * They are deliberately generic: no branded trucks, no crew, no signage, so
- * nothing on the page implies a job EarthScapes actually did. Alt text
- * describes the scene and never claims authorship.
+ * Real photographs, all **public domain**, sourced from Wikimedia Commons.
+ * Public domain specifically, not CC-BY: a client's commercial site should not
+ * carry an attribution obligation that nobody will remember to honour in three
+ * years.
  *
- * Replace with Nick's real photos when they arrive. Real photos of real
- * properties outperform stock on this page by a wide margin, because the buyer
- * is specifically trying to work out whether this contractor is real.
+ *   hero-lot.jpg     Winter Storm Juno 150127-F-UT482-065 (cropped to drop
+ *                    aircraft on the left edge)
+ *                    commons.wikimedia.org/wiki/File:Winter_Storm_Juno_150127-F-UT482-065.jpg
+ *   snow-blower.jpg  Winter storm 160120-Z-PM441-066
+ *                    commons.wikimedia.org/wiki/File:Winter_storm_160120-Z-PM441-066.jpg
+ *   loader-lot.jpg   Naval Station Great Lakes snow removal 140129-N-DA320-047
+ *                    commons.wikimedia.org/wiki/File:Naval_Station_Great_Lakes_snow_removal_140129-N-DA320-047.jpg
+ *
+ * These replaced AI-generated placeholders. Alt text describes the scene and
+ * does not claim the work as EarthScapes' own — it is not. Swap for Nick's real
+ * property photos when they arrive and bump the `?v=` below; a real photo of a
+ * real Monmouth or Ocean County lot beats any of this, because the buyer is
+ * specifically working out whether this contractor is real.
  *
  * Served from GitHub Pages, NOT jsDelivr. jsDelivr caches a branch URL for up
  * to 12 hours and its purge endpoint did not reliably clear the branch-to-commit
  * resolution, so an updated file kept serving stale. Pages honours normal cache
- * headers and goes live within a minute of a push, which is the whole point of
- * hosting outside Wix. `?v=` is belt-and-braces: bump it when a file is replaced.
+ * headers and goes live within a minute of a push.
  */
 const CDN = 'https://nick-baughman.github.io/earthscapes-assets/img';
 
@@ -78,24 +87,22 @@ const CDN = 'https://nick-baughman.github.io/earthscapes-assets/img';
  * Every CTA points at the site's existing consultation page.
  *
  * Mike, 2026-09-07: that is the flow EarthScapes actually works, so the page
- * hands off rather than running a second, competing intake. The trade is that
- * the qualification fields (property type, square footage, parking count,
- * building count, current contractor) no longer reach them before a site
- * visit — that filtering now happens on the call instead.
+ * hands off rather than running a second, competing intake.
  */
 const CTA_URL = 'https://www.earthscapesnj.com/consultation';
+
 const IMAGES = {
     hero: {
-        src: `${CDN}/hero-lot.jpg?v=1`,
-        alt: 'A commercial parking lot cleared to bare pavement at winter dawn, with snow banked along the perimeter',
+        src: `${CDN}/hero-lot.jpg?v=2`,
+        alt: 'A compact loader clearing snow from the parking area of a commercial office building during a storm',
     },
     plow: {
-        src: `${CDN}/plow.jpg?v=1`,
-        alt: 'A snow plow clearing a commercial parking lot before dawn during a storm',
+        src: `${CDN}/snow-blower.jpg?v=2`,
+        alt: 'A skid steer with a snow blower attachment clearing accumulation alongside a commercial building',
     },
     entrance: {
-        src: `${CDN}/entrance.jpg?v=1`,
-        alt: 'A commercial building entrance walkway cleared to the concrete and treated with de-icing salt',
+        src: `${CDN}/loader-lot.jpg?v=2`,
+        alt: 'A wheel loader with a pusher box clearing snow on a commercial property access road',
     },
 };
 

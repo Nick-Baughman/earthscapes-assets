@@ -53,17 +53,25 @@ changes on every deploy, which defeats the purpose.
 
 ## Images
 
-`img/` holds the page photography. **The current set is placeholder stock, not
-EarthScapes' own work.** They are deliberately generic — no branded vehicles, no
-crew, no signage — so the page never implies a job the company did not do. Alt
-text describes the scene and does not claim authorship.
+`img/` holds the page photography. **Real photographs, all public domain**,
+sourced from Wikimedia Commons and verified license-by-license.
 
-Replace with Nick's real property photos when available, keeping the same
-filenames, and bump the `?v=` query in `commercialSnowPage.js` so browsers and
-the CDN pick up the change.
+Public domain specifically, not CC-BY. A client's commercial site should not
+carry an attribution obligation buried in an image credit that nobody will
+remember to honour in three years.
 
-| File | Placement |
-|---|---|
-| `img/hero-lot.jpg` | Hero background |
-| `img/plow.jpg` | Documentation / liability section background |
-| `img/entrance.jpg` | Full-width band below the services list |
+| File | Placement | Source (all public domain) |
+|---|---|---|
+| `img/hero-lot.jpg` | Hero background | Winter Storm Juno 150127-F-UT482-065, cropped to remove aircraft on the left edge |
+| `img/snow-blower.jpg` | Documentation section | Winter storm 160120-Z-PM441-066 |
+| `img/loader-lot.jpg` | Band below services | Naval Station Great Lakes snow removal 140129-N-DA320-047 |
+
+These replaced AI-generated placeholders, which read as synthetic. EarthScapes'
+own Wix Media Manager was checked first and holds no winter imagery at all —
+29 images, all landscaping.
+
+**Alt text describes the scene and does not claim the work as EarthScapes'
+own.** It is not their work. When Nick supplies real property photos, drop them
+in with the same filenames and bump the `?v=` in `commercialSnowPage.js`. A real
+photo of a real Monmouth or Ocean County lot beats all of these, because this
+buyer is specifically trying to work out whether the contractor is real.
