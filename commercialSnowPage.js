@@ -456,6 +456,7 @@ class CommercialSnowPage extends HTMLElement {
         // of the last one and the page walks off screen.
         root.style.marginLeft = '0px';
         root.style.width = 'auto';
+        root.style.marginTop = '0px';
 
         const hostLeft = this.getBoundingClientRect().left;
         const viewport = document.documentElement.clientWidth;
@@ -469,7 +470,38 @@ class CommercialSnowPage extends HTMLElement {
             root.style.width = `${viewport}px`;
         }
 
+        this._closeTopGap(root);
         this._syncHeight(root);
+    }
+
+    /**
+     * Close the strip of Wix page background above the hero.
+     *
+     * Wix's mobile layout leaves the element sitting ~20px below the top of
+     * its own section (measured on the live page: header bottom 195, section
+     * top 195, element top 215). The section has no padding or margin, so the
+     * offset is where the element was placed inside it — and the site's
+     * background photograph shows through the gap as a stripe under the
+     * header.
+     *
+     * Measured rather than hardcoded because the offset differs between Wix's
+     * desktop and mobile layouts, and would drift again the next time anyone
+     * nudges the element in the Editor.
+     */
+    _closeTopGap(root) {
+        const section = this.closest('section');
+        if (!section) return;
+
+        const gap = Math.round(
+            this.getBoundingClientRect().top - section.getBoundingClientRect().top,
+        );
+
+        // Only a small positive gap is the artifact. A large offset means the
+        // element genuinely sits lower in a section that holds other content,
+        // and pulling it up would drag the page over whatever is above it.
+        if (gap > 0 && gap <= 80) {
+            root.style.marginTop = `${-gap}px`;
+        }
     }
 
     /**
