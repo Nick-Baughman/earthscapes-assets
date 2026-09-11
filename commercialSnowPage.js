@@ -229,7 +229,11 @@ const STYLES = `
 /* Scrim, not a flat tint: the text side needs contrast, the right side can
    keep the photograph legible. Without this the white type sits on snow. */
 .esn-hero-scrim{position:absolute;inset:0;
-  background:linear-gradient(100deg,rgba(9,16,20,.92) 0%,rgba(9,16,20,.82) 38%,rgba(9,16,20,.45) 72%,rgba(9,16,20,.3) 100%);}
+  /* Falls away faster on the right than it used to. The truck's branding is
+     the reason this photograph is here — a buyer checking whether the
+     contractor is real reads the door before the headline — so the scrim
+     protects the type on the left and then gets out of the way. */
+  background:linear-gradient(100deg,rgba(9,16,20,.93) 0%,rgba(9,16,20,.84) 30%,rgba(9,16,20,.42) 58%,rgba(9,16,20,.14) 100%);}
 .esn-hero .esn-in{position:relative;}
 .esn-hero h1{color:#fff;}
 .esn-hero .esn-lead{max-width:36ch;font-size:1.3rem;color:#D3E0E7;}
