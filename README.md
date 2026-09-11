@@ -53,25 +53,22 @@ changes on every deploy, which defeats the purpose.
 
 ## Images
 
-`img/` holds the page photography. **Real photographs, all public domain**,
-sourced from Wikimedia Commons and verified license-by-license.
-
-Public domain specifically, not CC-BY. A client's commercial site should not
-carry an attribution obligation buried in an image credit that nobody will
-remember to honour in three years.
-
-| File | Placement | Source (all public domain) |
+| File | Placement | Source |
 |---|---|---|
-| `img/hero-lot.jpg` | Hero background | Winter Storm Juno 150127-F-UT482-065, cropped to remove aircraft on the left edge |
-| `img/snow-blower.jpg` | Documentation section | Winter storm 160120-Z-PM441-066 |
-| `img/loader-lot.jpg` | Band below services | Naval Station Great Lakes snow removal 140129-N-DA320-047 |
+| `img/earthscapes-truck.jpg` | Hero background | **EarthScapes' own photograph.** Branded plow truck and crew on a cleared lot |
+| `img/snow-blower.jpg` | Documentation section | Public domain — Winter storm 160120-Z-PM441-066 (Wikimedia Commons) |
+| `img/loader-lot.jpg` | Band below services | Public domain — Naval Station Great Lakes snow removal 140129-N-DA320-047 |
 
-These replaced AI-generated placeholders, which read as synthetic. EarthScapes'
-own Wix Media Manager was checked first and holds no winter imagery at all —
-29 images, all landscaping.
+The hero is the only genuinely theirs, and it carries the most weight: this
+buyer is establishing whether the contractor is real, and a marked truck with a
+visible DOT number answers that faster than any paragraph. Its alt text says it
+is EarthScapes' because it is.
 
-**Alt text describes the scene and does not claim the work as EarthScapes'
-own.** It is not their work. When Nick supplies real property photos, drop them
-in with the same filenames and bump the `?v=` in `commercialSnowPage.js`. A real
-photo of a real Monmouth or Ocean County lot beats all of these, because this
-buyer is specifically trying to work out whether the contractor is real.
+The other two are public domain, **not CC-BY**, so the site carries no
+attribution obligation nobody would remember in three years. Their alt text
+describes the scene and does not claim the work as EarthScapes'.
+
+EarthScapes' Wix Media Manager was checked via the Media API and holds no winter
+imagery at all — 29 images, all landscaping. The hero came from Mike directly.
+
+To swap: same filenames, bump `?v=` in `commercialSnowPage.js`, push.

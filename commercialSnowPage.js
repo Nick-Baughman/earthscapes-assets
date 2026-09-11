@@ -57,29 +57,27 @@ const TOKENS = `
 /**
  * Imagery.
  *
- * Real photographs, all **public domain**, sourced from Wikimedia Commons.
- * Public domain specifically, not CC-BY: a client's commercial site should not
- * carry an attribution obligation that nobody will remember to honour in three
- * years.
+ * The hero is EARTHSCAPES' OWN PHOTOGRAPH — their branded plow truck and a
+ * crew member on a cleared lot, sourced from their existing Wix media. It is
+ * the only image here that is genuinely theirs, and it is doing the most work:
+ * this buyer is trying to establish whether the contractor is real, and a
+ * marked truck with a visible DOT number answers that faster than any
+ * paragraph on the page. Its alt text says so, because it is true.
  *
- *   hero-lot.jpg     Winter Storm Juno 150127-F-UT482-065 (cropped to drop
- *                    aircraft on the left edge)
- *                    commons.wikimedia.org/wiki/File:Winter_Storm_Juno_150127-F-UT482-065.jpg
+ * The remaining two are public domain from Wikimedia Commons, standing in
+ * until Nick supplies more of his own:
+ *
  *   snow-blower.jpg  Winter storm 160120-Z-PM441-066
  *                    commons.wikimedia.org/wiki/File:Winter_storm_160120-Z-PM441-066.jpg
  *   loader-lot.jpg   Naval Station Great Lakes snow removal 140129-N-DA320-047
  *                    commons.wikimedia.org/wiki/File:Naval_Station_Great_Lakes_snow_removal_140129-N-DA320-047.jpg
  *
- * These replaced AI-generated placeholders. Alt text describes the scene and
- * does not claim the work as EarthScapes' own — it is not. Swap for Nick's real
- * property photos when they arrive and bump the `?v=` below; a real photo of a
- * real Monmouth or Ocean County lot beats any of this, because the buyer is
- * specifically working out whether this contractor is real.
+ * Public domain specifically, not CC-BY: a client site should not carry an
+ * attribution obligation nobody will remember to honour in three years. Their
+ * alt text describes the scene and does NOT claim the work as EarthScapes'.
  *
- * Served from GitHub Pages, NOT jsDelivr. jsDelivr caches a branch URL for up
- * to 12 hours and its purge endpoint did not reliably clear the branch-to-commit
- * resolution, so an updated file kept serving stale. Pages honours normal cache
- * headers and goes live within a minute of a push.
+ * Served from GitHub Pages. Swapping any of these is a push plus a `?v=` bump,
+ * live in about a minute, with no Wix publish.
  */
 const CDN = 'https://nick-baughman.github.io/earthscapes-assets/img';
 
@@ -93,15 +91,15 @@ const CTA_URL = 'https://www.earthscapesnj.com/consultation';
 
 const IMAGES = {
     hero: {
-        src: `${CDN}/hero-lot.jpg?v=2`,
-        alt: 'A compact loader clearing snow from the parking area of a commercial office building during a storm',
+        src: `${CDN}/earthscapes-truck.jpg?v=3`,
+        alt: 'An EarthScapes plow truck and crew member on a cleared commercial lot in New Jersey',
     },
     plow: {
-        src: `${CDN}/snow-blower.jpg?v=2`,
+        src: `${CDN}/snow-blower.jpg?v=3`,
         alt: 'A skid steer with a snow blower attachment clearing accumulation alongside a commercial building',
     },
     entrance: {
-        src: `${CDN}/loader-lot.jpg?v=2`,
+        src: `${CDN}/loader-lot.jpg?v=3`,
         alt: 'A wheel loader with a pusher box clearing snow on a commercial property access road',
     },
 };
@@ -227,7 +225,7 @@ const STYLES = `
 /* Hero sits on a photograph, so it carries its own light-on-dark palette
    rather than inheriting the page's dark-on-light one. */
 .esn-hero{position:relative;padding:120px 24px 104px;overflow:hidden;background:var(--esn-ground-deep);}
-.esn-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center 62%;}
+.esn-hero-bg{position:absolute;inset:0;background-size:cover;background-position:70% 55%;}
 /* Scrim, not a flat tint: the text side needs contrast, the right side can
    keep the photograph legible. Without this the white type sits on snow. */
 .esn-hero-scrim{position:absolute;inset:0;
