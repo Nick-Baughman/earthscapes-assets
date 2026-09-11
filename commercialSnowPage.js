@@ -64,16 +64,18 @@ const TOKENS = `
  * marked truck with a visible DOT number answers that faster than any
  * paragraph on the page. Its alt text says so, because it is true.
  *
- * The remaining two are public domain from Wikimedia Commons, standing in
- * until Nick supplies more of his own:
+ * The band below the services list is EarthScapes' too: their marked truck
+ * with the blade down on a cleared lot, sharper than the hero and with the
+ * phone number legible. It sits in a full-bleed band with no type over it, so
+ * nothing competes with the branding.
+ *
+ * One image is still public domain, from Wikimedia Commons:
  *
  *   snow-blower.jpg  Winter storm 160120-Z-PM441-066
  *                    commons.wikimedia.org/wiki/File:Winter_storm_160120-Z-PM441-066.jpg
- *   loader-lot.jpg   Naval Station Great Lakes snow removal 140129-N-DA320-047
- *                    commons.wikimedia.org/wiki/File:Naval_Station_Great_Lakes_snow_removal_140129-N-DA320-047.jpg
  *
  * Public domain specifically, not CC-BY: a client site should not carry an
- * attribution obligation nobody will remember to honour in three years. Their
+ * attribution obligation nobody will remember to honour in three years. Its
  * alt text describes the scene and does NOT claim the work as EarthScapes'.
  *
  * Served from GitHub Pages. Swapping any of these is a push plus a `?v=` bump,
@@ -99,8 +101,8 @@ const IMAGES = {
         alt: 'A skid steer with a snow blower attachment clearing accumulation alongside a commercial building',
     },
     entrance: {
-        src: `${CDN}/loader-lot.jpg?v=3`,
-        alt: 'A wheel loader with a pusher box clearing snow on a commercial property access road',
+        src: `${CDN}/earthscapes-plow.jpg?v=3`,
+        alt: 'An EarthScapes plow truck with its blade down on a cleared commercial parking lot in New Jersey',
     },
 };
 
@@ -243,7 +245,10 @@ const STYLES = `
 /* Full-bleed photograph band. Height is capped in vh so it never eats the
    screen on a phone, and the aspect ratio floor stops it collapsing to a
    letterbox slit on very wide viewports. */
-.esn-band{position:relative;height:clamp(220px,38vh,420px);background-size:cover;background-position:center 38%;}
+/* Taller than a decorative strip. This band now holds EarthScapes' own truck,
+   and the old 220-420px slot cropped a 4:3 photograph down to a letterbox that
+   cut off both the blade and the cab. */
+.esn-band{position:relative;height:clamp(300px,52vh,620px);background-size:cover;background-position:center 52%;}
 
 /* The deep section keeps its dark ground and takes the photograph underneath
    at low opacity, so the type contrast is unchanged from the no-image build. */

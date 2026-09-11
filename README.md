@@ -55,20 +55,20 @@ changes on every deploy, which defeats the purpose.
 
 | File | Placement | Source |
 |---|---|---|
-| `img/earthscapes-truck.jpg` | Hero background | **EarthScapes' own photograph.** Branded plow truck and crew on a cleared lot |
+| `img/earthscapes-truck.jpg` | Hero background | **EarthScapes' own.** Branded truck and crew on a cleared lot |
+| `img/earthscapes-plow.jpg` | Band below services | **EarthScapes' own.** Marked truck, blade down, cleared commercial lot |
 | `img/snow-blower.jpg` | Documentation section | Public domain — Winter storm 160120-Z-PM441-066 (Wikimedia Commons) |
-| `img/loader-lot.jpg` | Band below services | Public domain — Naval Station Great Lakes snow removal 140129-N-DA320-047 |
 
-The hero is the only genuinely theirs, and it carries the most weight: this
-buyer is establishing whether the contractor is real, and a marked truck with a
-visible DOT number answers that faster than any paragraph. Its alt text says it
-is EarthScapes' because it is.
+Two of the three are genuinely theirs, which is the point: this buyer is
+establishing whether the contractor is real, and a marked truck with a legible
+phone number and DOT number answers that faster than any paragraph. Both carry
+alt text claiming the work as EarthScapes' because it is.
 
-The other two are public domain, **not CC-BY**, so the site carries no
-attribution obligation nobody would remember in three years. Their alt text
-describes the scene and does not claim the work as EarthScapes'.
+The remaining one is public domain, **not CC-BY**, so the site carries no
+attribution obligation nobody would remember in three years. Its alt text
+describes the scene and does not claim it as theirs.
 
-EarthScapes' Wix Media Manager was checked via the Media API and holds no winter
-imagery at all — 29 images, all landscaping. The hero came from Mike directly.
+Wix stores both originals around 1600px and serves upscales above that. If Nick
+has the camera originals they will hold up better on large monitors.
 
 To swap: same filenames, bump `?v=` in `commercialSnowPage.js`, push.
