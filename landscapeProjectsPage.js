@@ -328,8 +328,10 @@ const STYLES = `
 .elp-close .elp-cta{justify-content:center;margin-top:30px;}
 .elp-area{margin-top:28px;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:#8FA597;}
 
-/* Sticky mobile bar and photo viewer live on <body>, outside Wix's containers. */
-.elp-bar{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));
+/* Sticky mobile bar and photo viewer live on <body>, outside Wix's containers.
+   68px right padding keeps both clear of the site's UserWay accessibility button,
+   which floats bottom-right above everything (measured 44x44 at right 21px). */
+.elp-bar{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;padding:10px 68px calc(10px + env(safe-area-inset-bottom,0px)) 14px;
   background:rgba(251,250,247,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid #E2DDD2;
   display:flex;gap:10px;transform:translateY(110%);transition:transform .25s ease;font-family:var(--elp-body);}
 .elp-bar.show{transform:none;}
@@ -352,7 +354,7 @@ const STYLES = `
 .elp-slide img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
 .elp-vprev,.elp-vnext{position:absolute;top:50%;transform:translateY(-50%);display:none;}
 .elp-vprev{left:18px;}.elp-vnext{right:18px;}
-.elp-alt-text{text-align:center;color:#B9C9BF;font-size:.88rem;padding:0 20px calc(16px + env(safe-area-inset-bottom,0px));min-height:3em;}
+.elp-alt-text{text-align:center;color:#B9C9BF;font-size:.88rem;padding:0 68px calc(16px + env(safe-area-inset-bottom,0px));min-height:3em;}
 @media(min-width:900px){.elp-vprev,.elp-vnext{display:inline-flex;}.elp-slide{padding:0 90px 12px;}}
 
 @media(min-width:640px){
