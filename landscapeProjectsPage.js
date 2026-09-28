@@ -196,6 +196,7 @@ const ICON = {
     close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>',
     play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4.2-2 1.4a12 12 0 0 0 6.3 6.3l1.4-2 4.2 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg>',
 };
 
 /**
@@ -335,8 +336,8 @@ const STYLES = `
   background:rgba(251,250,247,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid #E2DDD2;
   display:flex;gap:10px;transform:translateY(110%);transition:transform .25s ease;font-family:var(--elp-body);}
 .elp-bar.show{transform:none;}
-.elp-bar .elp-btn{flex:1;padding:13px 16px;}
-.elp-bar .elp-btn-3{flex:0 0 auto;}
+.elp-bar .elp-btn{flex:1;padding:13px 12px;white-space:nowrap;font-size:.95rem;}
+.elp-bar .elp-bar-call{flex:0 0 48px;width:48px;padding:0;color:var(--elp-accent)!important;}
 @media(min-width:900px){.elp-bar{display:none;}}
 
 .elp-viewer{position:fixed;inset:0;z-index:2147483600;background:#080C0A;display:flex;flex-direction:column;font-family:var(--elp-body);color:#fff;}
@@ -690,7 +691,7 @@ class LandscapeProjectsPage extends HTMLElement {
         portal.innerHTML = `
       <div class="elp-bar" aria-hidden="true">
         <a class="elp-btn elp-btn-1" href="${CTA_URL}" data-cta="sticky" tabindex="-1">Book a consultation</a>
-        <a class="elp-btn elp-btn-3" href="${PHONE_HREF}" data-tel="sticky" aria-label="Call ${PHONE_TEXT}" tabindex="-1">Call</a>
+        <a class="elp-btn elp-btn-3 elp-bar-call" href="${PHONE_HREF}" data-tel="sticky" aria-label="Call ${PHONE_TEXT}" tabindex="-1">${ICON.phone}</a>
       </div>
       <div class="elp-viewer" role="dialog" aria-modal="true" aria-label="Project photos" hidden>
         <div class="elp-vtop"><div class="elp-vtitle"><span class="elp-vname"></span><span class="elp-vcount"></span></div>
