@@ -39,7 +39,7 @@
  * The `asset-base` attribute overrides it for local preview only.
  * ------------------------------------------------------------------ */
 const CDN = 'https://nick-baughman.github.io/earthscapes-assets';
-const V = 'v=1';
+const V = 'v=2';
 
 const CTA_URL = 'https://www.earthscapesnj.com/consultation';
 const DESIGN_URL = 'https://www.earthscapesnj.com/landscape-design';
@@ -80,11 +80,13 @@ const FONT_HREF = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9
 
 const HERO = {
     img: 'img/projects/hero/hero',
-    alt: 'Freeform pool with a raised spa, slide and boulder waterfall, framed by tiered retaining walls and a paver deck at sunset',
+    alt: 'The full backyard at dusk: lit tiered retaining walls, a boulder waterfall and slide, a freeform pool and a raised stone spa beside a paver patio',
 };
 
 /**
- * The projects, in carousel order. Houses 1 and 3 arrive later.
+ * The projects, in carousel order. The waterfall pool leads: it is Nick's
+ * most recent build and the one he is proudest of (Mike, 2026-09-28).
+ * Houses 1 and 3 arrive later.
  *
  * `story` supports one markup: [text](/path) for an inline link to a service
  * page. Everything else is escaped.
@@ -94,6 +96,24 @@ const HERO = {
  * purpose: the photographer's originals carried street addresses.
  */
 const PROJECTS = [
+    {
+        slug: 'waterfall-pool',
+        confirmed: false,
+        title: 'Freeform pool with boulder waterfall and spa',
+        story: 'Tiered [retaining walls](/retaining-walls) turn a sloped yard into usable levels. A boulder waterfall and a slide feed a freeform pool, with a raised spa spilling over into it. Natural stone steps and a flagstone path tie the pool deck to a fire pit patio off the back of the house.',
+        photos: [
+            [1, 'Freeform pool with a boulder waterfall, slide and raised spa below tiered retaining walls', 'l'],
+            [2, 'Raised stone spa spilling into the pool, with the waterfall and slide behind', 'l'],
+            [3, 'The full backyard at dusk, with lit retaining walls, pool, spa and lounge chairs', 'l'],
+            [4, 'Dining set on the paver patio overlooking the pool and waterfall at dusk', 'l'],
+            [5, 'Boulder waterfall and natural stone steps leading down to the pool', 'l'],
+            [6, 'Wood-burning fire pit on a stone patio, with the lit house behind at dusk', 'p'],
+            [7, 'Water cascading over boulders into the pool', 'p'],
+            [8, 'Close view of the boulder waterfall with the slide above', 'p'],
+            [9, 'Natural stone steps set between boulders and plantings', 'p'],
+            [10, 'Thick natural stone steps with a path light beside them', 'p'],
+        ],
+    },
     {
         slug: 'pool-fire-circle',
         confirmed: false,
@@ -120,24 +140,6 @@ const PROJECTS = [
             [4, 'Linear fire table between two white outdoor sofas on a herringbone paver patio', 'l'],
             [5, 'Built-in stainless grill, refrigerator and storage in a stone wall with cap lights', 'l'],
             [6, 'Fire bowls on stone pillars along a seat wall and paver walkway', 'l'],
-        ],
-    },
-    {
-        slug: 'waterfall-pool',
-        confirmed: false,
-        title: 'Freeform pool with boulder waterfall and spa',
-        story: 'Tiered [retaining walls](/retaining-walls) turn a sloped yard into usable levels. A boulder waterfall and a slide feed a freeform pool, with a raised spa spilling over into it. Natural stone steps and a flagstone path tie the pool deck to a fire pit patio off the back of the house.',
-        photos: [
-            [1, 'Freeform pool with a boulder waterfall, slide and raised spa below tiered retaining walls', 'l'],
-            [2, 'Raised stone spa spilling into the pool, with the waterfall and slide behind', 'l'],
-            [3, 'The full backyard at dusk, with lit retaining walls, pool, spa and lounge chairs', 'l'],
-            [4, 'Dining set on the paver patio overlooking the pool and waterfall at dusk', 'l'],
-            [5, 'Boulder waterfall and natural stone steps leading down to the pool', 'l'],
-            [6, 'Wood-burning fire pit on a stone patio, with the lit house behind at dusk', 'p'],
-            [7, 'Water cascading over boulders into the pool', 'p'],
-            [8, 'Close view of the boulder waterfall with the slide above', 'p'],
-            [9, 'Natural stone steps set between boulders and plantings', 'p'],
-            [10, 'Thick natural stone steps with a path light beside them', 'p'],
         ],
     },
 ];
@@ -245,8 +247,22 @@ const STYLES = `
 
 /* Hero */
 .elp-hero{position:relative;min-height:min(88svh,860px);display:flex;align-items:flex-end;color:#fff;background:var(--elp-deep);}
-.elp-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:40% 60%;}
+.elp-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 55%;}
 .elp-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,16,12,.18) 0%,rgba(10,16,12,0) 28%,rgba(10,16,12,.5) 55%,rgba(10,16,12,.82) 100%);}
+/* Desktop: the waterfall, slide and spa sit center-right in the hero photo, so the
+   scrim only darkens the left, where the text sits over the pavers and loungers. */
+/* Phones: a tall crop puts the waterfall and spa in the lower half, exactly
+   where overlaid text would sit. So the photo stands alone on top and fades
+   into a dark panel that carries the headline, like an app's hero card. */
+@media(max-width:899px){
+  .elp-hero{display:block;min-height:0;}
+  .elp-hero img{position:relative;display:block;height:min(58svh,560px);object-position:62% 50%;}
+  .elp-hero::after{bottom:auto;height:min(58svh,560px);
+    background:linear-gradient(180deg,rgba(10,16,12,.12) 0%,rgba(10,16,12,0) 68%,rgba(16,26,20,1) 100%);}
+  .elp-root .elp-hero .elp-in{padding-top:0;margin-top:-44px;}
+}
+@media(min-width:900px){.elp-hero img{object-position:50% 58%;}
+  .elp-hero::after{background:linear-gradient(90deg,rgba(10,16,12,.78) 0%,rgba(10,16,12,.5) 32%,rgba(10,16,12,0) 58%),linear-gradient(180deg,rgba(10,16,12,.2) 0%,rgba(10,16,12,0) 30%,rgba(10,16,12,0) 70%,rgba(10,16,12,.35) 100%);}}
 .elp-hero .elp-in{position:relative;z-index:1;width:100%;padding-bottom:64px;padding-top:120px;}
 .elp-hero .elp-eyebrow{color:#CFE5D6;}
 .elp-h1{font-size:clamp(2.4rem,6.4vw,4.6rem);max-width:14ch;margin-top:12px!important;}
