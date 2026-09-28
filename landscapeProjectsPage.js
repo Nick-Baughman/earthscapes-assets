@@ -253,7 +253,12 @@ const STYLES = `
 /* Hero */
 .elp-hero{position:relative;min-height:min(88svh,860px);display:flex;align-items:flex-end;color:#fff;background:var(--elp-deep);}
 .elp-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 55%;}
-.elp-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,16,12,.18) 0%,rgba(10,16,12,0) 28%,rgba(10,16,12,.5) 55%,rgba(10,16,12,.82) 100%);}
+/* Phones: text sits over the lower half of the photo, so the scrim ramps up
+   from about 35% and is at its darkest behind the eyebrow and headline
+   (Mike, 2026-09-28: words were blending into the waterfall and spa). */
+.elp-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,16,12,.2) 0%,rgba(10,16,12,0) 22%,rgba(10,16,12,.35) 38%,rgba(10,16,12,.72) 54%,rgba(10,16,12,.82) 72%,rgba(10,16,12,.9) 100%);}
+.elp-hero .elp-in{text-shadow:0 1px 14px rgba(0,0,0,.35);}
+.elp-hero .elp-btn{text-shadow:none;}
 /* Desktop: the waterfall, slide and spa sit center-right in the hero photo, so the
    scrim only darkens the left, where the text sits over the pavers and loungers. */
 /* Desktop: the box takes the photo's own 3:2 shape so nothing is cropped
