@@ -15,6 +15,8 @@ turns that into a push.
 | File | Used by |
 |---|---|
 | `commercialSnowPage.js` | `<commercial-snow-page>` on `/commercial-snow-and-ice-removal` |
+| `landscapeProjectsPage.js` | `<landscape-projects-page>` on `/landscape-design-projects` (SPEC-002) |
+| `img/projects/`, `video/projects/` | Project photos (WebP 800/1600), highlight videos (720p, no audio) and posters for the page above |
 
 ## The Server URL
 
