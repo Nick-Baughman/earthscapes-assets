@@ -256,16 +256,6 @@ const STYLES = `
 .elp-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,16,12,.18) 0%,rgba(10,16,12,0) 28%,rgba(10,16,12,.5) 55%,rgba(10,16,12,.82) 100%);}
 /* Desktop: the waterfall, slide and spa sit center-right in the hero photo, so the
    scrim only darkens the left, where the text sits over the pavers and loungers. */
-/* Phones: a tall crop puts the waterfall and spa in the lower half, exactly
-   where overlaid text would sit. So the photo stands alone on top and fades
-   into a dark panel that carries the headline, like an app's hero card. */
-@media(max-width:899px){
-  .elp-hero{display:block;min-height:0;}
-  .elp-hero img{position:relative;display:block;height:min(58svh,560px);object-position:62% 50%;}
-  .elp-hero::after{bottom:auto;height:min(58svh,560px);
-    background:linear-gradient(180deg,rgba(10,16,12,.12) 0%,rgba(10,16,12,0) 68%,rgba(16,26,20,1) 100%);}
-  .elp-root .elp-hero .elp-in{padding-top:0;margin-top:-44px;}
-}
 /* Desktop: the box takes the photo's own 3:2 shape so nothing is cropped
    (the old 88svh/860px cap cut the tiered walls off on wide screens). It only
    crops again past 100svh, on very wide monitors. The text is centred
