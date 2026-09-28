@@ -28,6 +28,11 @@
  *   shows placeholder reviews.
  */
 
+// Everything below sits in one block so its top-level names stay private.
+// Classic scripts share one global scope: commercialSnowPage.js declares its
+// own `CDN`, and loading both on one page threw "Identifier 'CDN' has already
+// been declared" (reproduced 2026-09-28).
+{
 /* ------------------------------------------------------------------ *
  * Where media is served from. GitHub Pages, like the snow page: a media
  * swap is a push plus a `?v=` bump, with no Wix publish.
@@ -728,7 +733,7 @@ class LandscapeProjectsPage extends HTMLElement {
         const name = viewer.querySelector('.elp-vname');
         const vcount = viewer.querySelector('.elp-vcount');
         const altText = viewer.querySelector('.elp-alt-text');
-        let project = null; let opener = null; let lastOverflow = '';
+        let project = null; let opener = null; let saved = null;
 
         const index = () => Math.round(vtrack.scrollLeft / Math.max(1, vtrack.clientWidth));
         const sync = () => {
@@ -752,19 +757,47 @@ class LandscapeProjectsPage extends HTMLElement {
             }).join('');
             this.querySelectorAll('.elp-media video').forEach((v) => v.pause());
             viewer.hidden = false;
-            lastOverflow = document.documentElement.style.overflow;
-            document.documentElement.style.overflow = 'hidden';
-            requestAnimationFrame(() => { goTo(k, false); sync(); viewer.querySelector('.elp-vclose').focus(); });
+            saved = scrollState();
+            requestAnimationFrame(() => {
+                goTo(k, false);
+                sync();
+                // preventScroll: focusing must never move the page underneath.
+                viewer.querySelector('.elp-vclose').focus({ preventScroll: true });
+            });
         };
         const shut = () => {
             if (viewer.hidden) return;
             viewer.hidden = true;
             vtrack.innerHTML = '';
-            document.documentElement.style.overflow = lastOverflow;
             if (opener) opener.focus({ preventScroll: true });
+            restoreScroll(saved);
             project = null;
             this._resumeVisible();
         };
+
+        /*
+         * Scroll lock WITHOUT touching `overflow`. On Wix the scrolling box is
+         * <body>, not the viewport: setting overflow:hidden on <html> stops
+         * body's overflow propagating to the viewport, body becomes its own
+         * scroller, and the page snaps to the top (measured on the live snow
+         * page: scrollTop 1024 -> 0). So the page is left alone, vertical
+         * gestures over the viewer are swallowed, and the position is put back
+         * on close in case anything moved it.
+         */
+        const scrollers = () => [document.scrollingElement, document.body, document.documentElement].filter(Boolean);
+        const scrollState = () => scrollers().map((el) => [el, el.scrollTop]);
+        const restoreScroll = (state) => (state || []).forEach(([el, top]) => { if (el.scrollTop !== top) el.scrollTop = top; });
+
+        viewer.addEventListener('wheel', (e) => {
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) e.preventDefault();
+        }, { passive: false });
+        let touch = null;
+        viewer.addEventListener('touchstart', (e) => { touch = e.touches[0]; }, { passive: true });
+        viewer.addEventListener('touchmove', (e) => {
+            if (!touch) return;
+            const t = e.touches[0];
+            if (Math.abs(t.clientY - touch.clientY) > Math.abs(t.clientX - touch.clientX)) e.preventDefault();
+        }, { passive: false });
 
         this.querySelector('.elp-ptrack').addEventListener('click', (e) => {
             const t = e.target.closest('.elp-thumb');
@@ -912,4 +945,5 @@ class LandscapeProjectsPage extends HTMLElement {
 
 if (!customElements.get('landscape-projects-page')) {
     customElements.define('landscape-projects-page', LandscapeProjectsPage);
+}
 }
