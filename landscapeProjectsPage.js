@@ -46,8 +46,13 @@ const DESIGN_URL = 'https://www.earthscapesnj.com/landscape-design';
 const PHONE_HREF = 'tel:7324448575';
 const PHONE_TEXT = '732-444-8575';
 
-/** The listing already linked from /landscape-design ("Read all of our Google Reviews"). */
-const GOOGLE_LISTING = 'https://www.google.com/maps/place/Earth+Scapes+Landscape+%26+Outdoor+Living/@40.1181615,-74.0549808,17z/data=!4m8!3m7!1s0x830110168f7d5b73:0xdec8d69f9ae2ad56!8m2!3d40.1181615!4d-74.0524059!9m1!1b1';
+/**
+ * Nick's Google Business Profile share link (Mike, 2026-09-28). Resolves to the
+ * same listing (knowledge-graph id /g/11y4qlt3f_) as the Maps link on
+ * /landscape-design. Until the Places key exists this is the whole reviews
+ * section; once it does, it is the "Read all" link under the live reviews.
+ */
+const GOOGLE_LISTING = 'https://share.google/XOthyNAkdBhlarA97';
 
 /* ------------------------------------------------------------------ *
  * Design tokens. Change branding here and nowhere else.
@@ -261,7 +266,13 @@ const STYLES = `
     background:linear-gradient(180deg,rgba(10,16,12,.12) 0%,rgba(10,16,12,0) 68%,rgba(16,26,20,1) 100%);}
   .elp-root .elp-hero .elp-in{padding-top:0;margin-top:-44px;}
 }
-@media(min-width:900px){.elp-hero img{object-position:50% 58%;}
+/* Desktop: the box takes the photo's own 3:2 shape so nothing is cropped
+   (the old 88svh/860px cap cut the tiered walls off on wide screens). It only
+   crops again past 100svh, on very wide monitors. The text is centred
+   vertically so the buttons stay above the fold under Wix's header. */
+@media(min-width:900px){.elp-hero{min-height:0;width:100%;aspect-ratio:2500/1677;max-height:100svh;align-items:center;}
+  .elp-root .elp-hero .elp-in{padding-top:48px;padding-bottom:48px;}
+  .elp-hero img{object-position:50% 55%;}
   .elp-hero::after{background:linear-gradient(90deg,rgba(10,16,12,.78) 0%,rgba(10,16,12,.5) 32%,rgba(10,16,12,0) 58%),linear-gradient(180deg,rgba(10,16,12,.2) 0%,rgba(10,16,12,0) 30%,rgba(10,16,12,0) 70%,rgba(10,16,12,.35) 100%);}}
 .elp-hero .elp-in{position:relative;z-index:1;width:100%;padding-bottom:64px;padding-top:120px;}
 .elp-hero .elp-eyebrow{color:#CFE5D6;}
