@@ -558,7 +558,7 @@ class LandscapeProjectsPage extends HTMLElement {
         // Page code sets `reviews` within a second or two. If it never does
         // (API down, key missing, element previewed on its own), fall back to
         // the link rather than leaving skeletons up.
-        this._reviewTimer = setTimeout(() => { if (!this._reviewsDone) this._renderReviews('{"error":true}'); }, 8000);
+        this._reviewTimer = setTimeout(() => { if (!this._reviewsDone) this._renderReviews('{"error":true}'); }, 4000);
 
         this._fitToViewport();
         this._watchViewport();
