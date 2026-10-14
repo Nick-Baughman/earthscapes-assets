@@ -385,7 +385,9 @@ const STYLES = `
   .elp-media{flex:0 0 46%;aspect-ratio:auto;max-height:none;min-height:520px;}
   .elp-review,.elp-skel{flex:0 0 min(420px,calc(100% - 80px));}
   .elp-steps{grid-template-columns:repeat(2,1fr);}
-  .elp-band{aspect-ratio:21/9;}
+  /* The band photo is 3:2; the 21:9 strip shows 64% of its height. Anchor to
+     the bottom so the pool and fire features stay in, not the tree line. */
+  .elp-band{aspect-ratio:21/9;object-position:50% 100%;}
 }
 @media(min-width:1024px){
   .elp-track{padding-left:max(24px,calc((100% - 1192px)/2));padding-right:max(24px,calc((100% - 1192px)/2));
