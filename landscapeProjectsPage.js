@@ -607,15 +607,19 @@ class LandscapeProjectsPage extends HTMLElement {
         const [prev, next] = this.querySelectorAll('.elp-arrow');
         this._track = track;
 
+        // The track's scroll-padding is a CSS max() expression on desktop, which
+        // parseFloat cannot read (it returned NaN and the arrows went dead). The
+        // first card's offset inside the track is that same padding, measured.
+        const pad = () => cards[0].offsetLeft - track.offsetLeft;
         const go = (i) => {
             const card = cards[Math.max(0, Math.min(cards.length - 1, i))];
-            track.scrollTo({ left: card.offsetLeft - track.offsetLeft - parseFloat(getComputedStyle(track).scrollPaddingLeft || 0), behavior: 'smooth' });
+            track.scrollTo({ left: card.offsetLeft - track.offsetLeft - pad(), behavior: 'smooth' });
         };
         const current = () => {
-            const pad = parseFloat(getComputedStyle(track).scrollPaddingLeft || 0);
+            const pad0 = pad();
             let best = 0; let dist = Infinity;
             cards.forEach((c, i) => {
-                const d = Math.abs(c.offsetLeft - track.offsetLeft - pad - track.scrollLeft);
+                const d = Math.abs(c.offsetLeft - track.offsetLeft - pad0 - track.scrollLeft);
                 if (d < dist) { dist = d; best = i; }
             });
             return best;
@@ -627,6 +631,12 @@ class LandscapeProjectsPage extends HTMLElement {
             const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
             prev.disabled = track.scrollLeft < 4;
             next.disabled = atEnd;
+            if (i !== this._active) {
+                this._active = i;
+                // A new lead card cancels any manual play on the others.
+                this.querySelectorAll('.elp-media video').forEach((v) => { v._userPlay = false; });
+                this._syncVideos();
+            }
         };
 
         prev.addEventListener('click', () => go(current() - 1));
@@ -648,24 +658,38 @@ class LandscapeProjectsPage extends HTMLElement {
     /* ---------------- Videos ---------------- */
 
     /**
-     * Play a highlight only while most of it is on screen, pause it otherwise.
-     * One video decoding at a time keeps phones cool and the page smooth.
-     * Reduced-motion visitors get the poster and a play button, never autoplay.
+     * One highlight plays at a time: the carousel's current card, and only
+     * while it is mostly on screen. On desktop two cards are visible at once
+     * and both playing was overwhelming (Mike, 2026-10-14), so the others sit
+     * on their poster with a play button. Tapping play on another card makes
+     * that one the player until the carousel moves. Reduced-motion visitors
+     * get posters only, never autoplay.
      */
     _wireVideos() {
         const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this._reduceMotion = !!reduce;
         const setBtn = (btn, playing) => {
             btn.innerHTML = playing ? ICON.pause : ICON.play;
             btn.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
         };
 
-        this.querySelectorAll('.elp-media').forEach((m) => {
-            const v = m.querySelector('video');
-            const btn = m.querySelector('.elp-vbtn');
+        const videos = [...this.querySelectorAll('.elp-media video')];
+        videos.forEach((v, i) => {
+            const btn = v.parentElement.querySelector('.elp-vbtn');
             v.muted = true;
+            v._index = i;
             setBtn(btn, false);
             btn.addEventListener('click', () => {
-                if (v.paused) { v._userPaused = false; v.play().catch(() => {}); } else { v._userPaused = true; v.pause(); }
+                if (v.paused) {
+                    v._userPaused = false;
+                    v._userPlay = true;
+                    videos.forEach((o) => { if (o !== v) { o._userPlay = false; o.pause(); } });
+                    v.play().catch(() => {});
+                } else {
+                    v._userPaused = true;
+                    v._userPlay = false;
+                    v.pause();
+                }
             });
             v.addEventListener('play', () => setBtn(btn, true));
             v.addEventListener('pause', () => setBtn(btn, false));
@@ -674,20 +698,25 @@ class LandscapeProjectsPage extends HTMLElement {
         if (reduce || typeof IntersectionObserver === 'undefined') return;
 
         this._vio = new IntersectionObserver((entries) => {
-            entries.forEach((en) => {
-                const v = en.target;
-                if (en.intersectionRatio >= 0.6) {
-                    if (!v._userPaused) v.play().catch(() => {});
-                } else if (!v.paused) {
-                    v.pause();
-                }
-            });
+            entries.forEach((en) => { en.target._visible = en.intersectionRatio >= 0.6; });
+            this._syncVideos();
         }, { threshold: [0, 0.6, 1] });
-        this.querySelectorAll('.elp-media video').forEach((v) => this._vio.observe(v));
+        videos.forEach((v) => this._vio.observe(v));
     }
 
-    /** The observer only fires on change, so after the viewer closes, restart
-     *  whichever highlight is still on screen. */
+    /** Apply the one-at-a-time rule to the current visibility and lead card. */
+    _syncVideos() {
+        if (this._reduceMotion) return;
+        const lead = this._active || 0;
+        this.querySelectorAll('.elp-media video').forEach((v) => {
+            const want = !!v._visible && !v._userPaused && (v._index === lead || v._userPlay);
+            if (want && v.paused) v.play().catch(() => {});
+            else if (!want && !v.paused) v.pause();
+        });
+    }
+
+    /** The observer only fires on change, so after the viewer closes, measure
+     *  visibility by hand and re-apply the rule. */
     _resumeVisible() {
         if (!this._vio) return;
         const vh = window.innerHeight; const vw = document.documentElement.clientWidth;
@@ -695,8 +724,9 @@ class LandscapeProjectsPage extends HTMLElement {
             const r = v.getBoundingClientRect();
             const w = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
             const h = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
-            if (r.width && r.height && (w * h) / (r.width * r.height) >= 0.6 && !v._userPaused) v.play().catch(() => {});
+            v._visible = !!(r.width && r.height) && (w * h) / (r.width * r.height) >= 0.6;
         });
+        this._syncVideos();
     }
 
     /* ---------------- Portal: sticky bar + viewer ---------------- */
